@@ -25,6 +25,8 @@ import re
 import pprint
 import copy
 from fractions import Fraction
+from math import floor
+from math import ceil
 #from mido import Message, MetaMessage, MidiFile, MidiTrack
 import mido
 
@@ -375,7 +377,7 @@ def checkSpans(p_spans):
   totalMilis = 0
 
   for span in p_spans:
-    if not span["barsNumber"].is_integer():
+    if floor(span["barsNumber"]) != ceil(span["barsNumber"]):
       print("ERROR! Non-whole bars number in span of length {} ! Exiting ...\n".format(span["span"]))
       quit(1)
     if span["barsNumber"] <= Fraction(0):
@@ -610,7 +612,7 @@ print("Total fraction: {}".format(totalF))
 
 printSep("calculatedPointers")
 calculatedPointers = calculatePointers(enumeratedBeats)
-pprint.pprint(calculatedPointers)
+#pprint.pprint(calculatedPointers)
 
 
 printSep("checkPointersCrossings")
