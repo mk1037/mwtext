@@ -22,7 +22,7 @@
 import argparse
 import sys
 import re
-import pprint
+#import pprint
 import copy
 from fractions import Fraction
 from math import floor
@@ -66,9 +66,9 @@ args = options.parse_args()
 #########################################################################
 #########################################################################
 #########################################################################
-print("This is text maker for MW21")
-print("Input is \"{}\"\nMsh out is \"{}\"\nTxt out is \"{}\"".format(
-  args.input_file, args.output_file_mid, args.output_file_txt ))
+print("\nThis is text maker for MW21\n")
+#print("input is \"{}\"\nmid out is \"{}\"\ntxt out is \"{}\"".format(
+#  args.input_file, args.output_file_mid, args.output_file_txt ))
 
 #########################################################################
 #########################################################################
@@ -371,7 +371,7 @@ def buildSpans(p_lines):
   return result
 
 def checkSpans(p_spans):
-  pprint.pprint(p_spans)
+#  pprint.pprint(p_spans)
 
   totalFraction = Fraction(0)
   totalMilis = 0
@@ -441,6 +441,7 @@ def renderMidi(p_spans, p_lines, p_res, p_totalF):
   mid = mido.MidiFile(ticks_per_beat=p_res)
   metaTrack = mido.MidiTrack()
   pointerTrack = mido.MidiTrack()
+  rewindTrack = mido.MidiTrack()
 
   recentMetaPos = 0
   recentSignature = None
@@ -468,8 +469,10 @@ def renderMidi(p_spans, p_lines, p_res, p_totalF):
         pointerTrack.append(mido.Message('note_off', note=1, velocity=0, channel=3, time=10 ))
         recentAbs = absTick+10
 
+  rewindTrack.append(mido.Message('note_on', note=9, velocity=1, channel=3, time=20))
+  rewindTrack.append(mido.Message('note_off', note=9, velocity=1, channel=3, time=10))
 
-  sumTrack = mido.merge_tracks([metaTrack, pointerTrack])
+  sumTrack = mido.merge_tracks([metaTrack, pointerTrack, rewindTrack])
   mid.tracks.append(sumTrack)
   mid.save(args.output_file_mid)
 
@@ -478,7 +481,7 @@ def renderText(p_lines):
 #    f.write('A new line.\n')
     for cline in p_lines:
       if cline["rawtokens"] == ['']:
-        f.write("\n");
+        f.write(cline["comment"] + "\n");
         continue
       result = ""
       for texttoken in cline["textTokens"]:
@@ -490,7 +493,7 @@ def renderText(p_lines):
 
       if cline["hint"] and result != "":
         result = '~' + result
-      f.write(result + "\n")
+      f.write(result + cline["comment"] + "\n")
 
 
 
@@ -561,67 +564,67 @@ def parseSpanMiliseconds(p_str):
 #########################################################################
 #########################################################################
 
-printSep("inputlines")
+#printSep("inputlines")
 inputlines = readInput(args.input_file)
 #pprint.pprint(inputlines)
 
-printSep("separated")
+#printSep("separated")
 separated = separateComments(inputlines)
 #pprint.pprint(separated)
 
-printSep("splitted")
+#printSep("splitted")
 splitted = splitLines(separated)
 #pprint.pprint(splitted)
 
 
-printSep("normalized")
+#printSep("normalized")
 normalized = normalize(splitted)
 #pprint.pprint(normalized)
 
 
-printSep("syntaxRecognized")
+#printSep("syntaxRecognized")
 syntaxRecognized = syntaxRecognize(normalized)
 #pprint.pprint(syntaxRecognized)
 
 
-printSep("calculateText")
+#printSep("calculateText")
 tokensText = getText(syntaxRecognized)
 #pprint.pprint(tokensText)
 
 
-printSep("semanticTokens")
+#printSep("semanticTokens")
 semanticRecognized = semanticRecognize(tokensText)
 #pprint.pprint(semanticRecognized)
 
-printSep("enumeratedBeats")
+#printSep("enumeratedBeats")
 enumeratedBeats = enumerateBeats(semanticRecognized)
 #pprint.pprint(enumeratedBeats)
 
 
-printSep("precheckSemanticTokens")
+#printSep("precheckSemanticTokens")
 precheckSemanticTokens(enumeratedBeats)
 
-printSep("buildSpans")
+#printSep("buildSpans")
 spans = buildSpans(enumeratedBeats)
 #pprint.pprint(spans)
 
-printSep("checkSpans")
+#printSep("checkSpans")
 (totalF, totalM) = checkSpans(spans)
 print("Total miliseconds: {} = {:02d}:{:02d}:{:02d}.{:03d}".format(totalM, (totalM // (60*60*1000) ) % 60, (totalM // (60*1000) ) % 60, (totalM // 1000) % 60, totalM % 1000 ))
 print("Total fraction: {}".format(totalF))
 
-printSep("calculatedPointers")
+#printSep("calculatedPointers")
 calculatedPointers = calculatePointers(enumeratedBeats)
 #pprint.pprint(calculatedPointers)
 
 
-printSep("checkPointersCrossings")
+#printSep("checkPointersCrossings")
 checkPointersCrossings(calculatedPointers, totalF)
 #pprint.pprint(calculatedPointers)
 
-printSep("renderMidi")
+#printSep("renderMidi")
 renderMidi(spans, enumeratedBeats, 384, totalF)
 
-printSep("renderText")
+#printSep("renderText")
 renderText(enumeratedBeats)
 
