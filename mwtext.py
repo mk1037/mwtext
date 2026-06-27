@@ -449,14 +449,10 @@ def renderMidi(p_spans, p_lines, p_res, p_totalF):
   for span in p_spans:
     spanTickLen = int((span["beats"] / Fraction(1, 4)) * p_res)
     spanTempo = 1000*span["spanmilis"] // int(span["beats"] / Fraction(1, 4))
-    print("New tempo is {:.3f} BPM".format(60000000 / spanTempo))
-    if span["signature"] != recentSignature:
-      metaTrack.append(mido.MetaMessage('time_signature', numerator=span["signature"]["A"], denominator=span["signature"]["B"], time=recentMetaPos))
-      recentSignature = span["signature"]
-      recentMetaPos = 0
-    if spanTempo != recentTempo:
-      metaTrack.append(mido.MetaMessage('set_tempo', tempo=spanTempo, time=recentMetaPos))
-      recentTempo = spanTempo
+    print("\nNew tempo is {:.3f} BPM".format(60000000 / spanTempo))
+    print("Span length is {} bars".format( int(span["beats"])  ))
+    metaTrack.append(mido.MetaMessage('time_signature', numerator=span["signature"]["A"], denominator=span["signature"]["B"], time=recentMetaPos))
+    metaTrack.append(mido.MetaMessage('set_tempo', tempo=spanTempo, time=0))
 
     recentMetaPos = spanTickLen
 
